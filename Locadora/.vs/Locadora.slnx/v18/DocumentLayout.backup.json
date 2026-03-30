@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\1 - LILIANNE\\Area de Trabalho\\1-PUC\\2026-1\\TADS\\tads-2026-1-tp1-lilianneps\\Locadora\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{64FA76B4-A8DF-4762-8074-B319595C566D}|Locadora.csproj|e:\\1 - lilianne\\area de trabalho\\1-puc\\2026-1\\tads\\tads-2026-1-tp1-lilianneps\\locadora\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{64FA76B4-A8DF-4762-8074-B319595C566D}|Locadora.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{64FA76B4-A8DF-4762-8074-B319595C566D}|Locadora.csproj|e:\\1 - lilianne\\area de trabalho\\1-puc\\2026-1\\tads\\tads-2026-1-tp1-lilianneps\\locadora\\locadora.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{64FA76B4-A8DF-4762-8074-B319595C566D}|Locadora.csproj|solutionrelative:locadora.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\1 - LILIANNE\\Area de Trabalho\\1-PUC\\2026-1\\TADS\\tads-2026-1-tp1-lilianneps\\Locadora\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "E:\\1 - LILIANNE\\Area de Trabalho\\1-PUC\\2026-1\\TADS\\tads-2026-1-tp1-lilianneps\\Locadora\\Program.cs*",
+              "RelativeToolTip": "Program.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-30T22:38:31.916Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Locadora",
+              "DocumentMoniker": "E:\\1 - LILIANNE\\Area de Trabalho\\1-PUC\\2026-1\\TADS\\tads-2026-1-tp1-lilianneps\\Locadora\\Locadora.csproj",
+              "RelativeDocumentMoniker": "Locadora.csproj",
+              "ToolTip": "E:\\1 - LILIANNE\\Area de Trabalho\\1-PUC\\2026-1\\TADS\\tads-2026-1-tp1-lilianneps\\Locadora\\Locadora.csproj*",
+              "RelativeToolTip": "Locadora.csproj*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-30T22:33:51.613Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
