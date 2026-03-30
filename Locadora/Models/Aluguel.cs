@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Locadora.Models;
 
-public partial class Aluguei
+public partial class Aluguel
 {
     public int Id { get; set; }
 

@@ -15,7 +15,7 @@ public partial class LocadoraContext : DbContext
     {
     }
 
-    public virtual DbSet<Aluguei> Alugueis { get; set; }
+    public virtual DbSet<Aluguel> Alugueis { get; set; }
 
     public virtual DbSet<CategoriasVeiculo> CategoriasVeiculos { get; set; }
 
