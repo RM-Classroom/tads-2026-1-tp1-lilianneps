@@ -23,7 +23,7 @@ public partial class Veiculo
 
     public int CategoriaId { get; set; }
 
-    public virtual ICollection<Aluguei> Alugueis { get; set; } = new List<Aluguei>();
+    public virtual ICollection<Aluguel> Alugueis { get; set; } = new List<Aluguel>();
 
     public virtual CategoriasVeiculo Categoria { get; set; } = null!;
 

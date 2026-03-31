@@ -33,7 +33,7 @@ public partial class LocadoraContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Aluguei>(entity =>
+        modelBuilder.Entity<Aluguel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Alugueis__3214EC07DA44AE3E");
 

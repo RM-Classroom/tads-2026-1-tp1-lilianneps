@@ -1,8 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using Locadora.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<LocadoraContext>(options =>
+    options.UseSqlServer("Server=.\\SQLEXPRESS;Database=LocadoraVeiculos;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 var app = builder.Build();
 

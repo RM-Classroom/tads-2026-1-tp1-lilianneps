@@ -17,5 +17,5 @@ public partial class Cliente
 
     public string? Cnh { get; set; }
 
-    public virtual ICollection<Aluguei> Alugueis { get; set; } = new List<Aluguei>();
+    public virtual ICollection<Aluguel> Alugueis { get; set; } = new List<Aluguel>();
 }

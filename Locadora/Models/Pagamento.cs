@@ -17,5 +17,5 @@ public partial class Pagamento
 
     public string StatusPagamento { get; set; } = null!;
 
-    public virtual Aluguei Aluguel { get; set; } = null!;
+    public virtual Aluguel Aluguel { get; set; } = null!;
 }
