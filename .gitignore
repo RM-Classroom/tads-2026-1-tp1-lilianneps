@@ -4,4 +4,4 @@
 **/obj/
 *.user
 *.suo
-desktop.ini
+**/desktop.ini
