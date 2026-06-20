@@ -72,9 +72,7 @@ namespace Locadora.Controllers
             return NoContent();
         }
 
-        // POST: api/Clientes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        
         [HttpPost]
         public async Task<ActionResult<Cliente>> PostCliente([FromBody] Cliente cliente)
         {
