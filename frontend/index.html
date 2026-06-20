@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Locadora de Veiculos</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Sistema integrado ao backend</p>
+        <h1>Locadora de Veiculos</h1>
+      </div>
+      <div class="api-box">
+        <label for="apiBase">URL da API</label>
+        <div class="api-row">
+          <input id="apiBase" type="url" value="http://localhost:5206/api">
+          <button id="saveApi" type="button">Conectar</button>
+        </div>
+        <span id="apiStatus" class="status">Aguardando conexao</span>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <nav class="tabs" aria-label="Navegacao principal">
+        <button class="tab active" data-view="dashboard" type="button">Painel</button>
+        <button class="tab" data-view="clientes" type="button">Clientes</button>
+        <button class="tab" data-view="fabricantes" type="button">Fabricantes</button>
+        <button class="tab" data-view="categorias" type="button">Categorias</button>
+        <button class="tab" data-view="veiculos" type="button">Veiculos</button>
+        <button class="tab" data-view="alugueis" type="button">Alugueis</button>
+        <button class="tab" data-view="pagamentos" type="button">Pagamentos</button>
+        <button class="tab" data-view="consultas" type="button">Consultas</button>
+      </nav>
+
+      <section id="app" class="content" aria-live="polite"></section>
+    </main>
+
+    <template id="entityTemplate">
+      <section class="entity-layout">
+        <div class="entity-main">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow entity-subtitle"></p>
+              <h2 class="entity-title"></h2>
+            </div>
+            <button class="ghost-button reload-button" type="button">Recarregar</button>
+          </div>
+
+          <div class="toolbar">
+            <div class="filters"></div>
+            <button class="primary-button new-button" type="button">Novo registro</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="form-panel">
+          <div class="section-title compact">
+            <div>
+              <p class="eyebrow form-mode">Cadastro</p>
+              <h3 class="form-title"></h3>
+            </div>
+          </div>
+          <form class="entity-form"></form>
+          <div class="form-actions">
+            <button class="primary-button save-button" type="button">Salvar</button>
+            <button class="ghost-button clear-button" type="button">Limpar</button>
+          </div>
+        </aside>
+      </section>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
