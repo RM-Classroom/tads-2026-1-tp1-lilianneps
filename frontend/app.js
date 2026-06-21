@@ -1,14 +1,13 @@
 const apiInput = document.getElementById("apiBase");
 const apiStatus = document.getElementById("apiStatus");
 const app = document.getElementById("app");
-const template = document.getElementById("entityTemplate");
 
 const state = {
-  view: "dashboard",
+  view: "home",
   apiBase: localStorage.getItem("locadora-api") || "http://localhost:5206/api",
   data: {},
   filters: {},
-  editing: {}
+  modal: null
 };
 
 apiInput.value = state.apiBase;
@@ -16,13 +15,12 @@ apiInput.value = state.apiBase;
 const entities = {
   clientes: {
     title: "Clientes",
-    subtitle: "Cadastro, edicao, exclusao e pesquisa",
+    singular: "Cliente",
     endpoint: "Clientes",
-    id: "id",
     fields: [
       { name: "nome", label: "Nome", required: true },
       { name: "cpf", label: "CPF", required: true, maxLength: 11 },
-      { name: "email", label: "E-mail", type: "email", required: true },
+      { name: "email", label: "Email", type: "email", required: true },
       { name: "telefone", label: "Telefone" },
       { name: "cnh", label: "CNH" }
     ],
@@ -34,9 +32,8 @@ const entities = {
   },
   fabricantes: {
     title: "Fabricantes",
-    subtitle: "Marcas dos veiculos",
+    singular: "Fabricante",
     endpoint: "Fabricantes",
-    id: "id",
     fields: [
       { name: "nome", label: "Nome", required: true },
       { name: "paisOrigem", label: "Pais de origem" }
@@ -49,9 +46,8 @@ const entities = {
   },
   categorias: {
     title: "Categorias",
-    subtitle: "Classificacao dos veiculos",
+    singular: "Categoria",
     endpoint: "CategoriasVeiculos",
-    id: "id",
     fields: [
       { name: "nome", label: "Nome", required: true },
       { name: "descricao", label: "Descricao" }
@@ -64,9 +60,8 @@ const entities = {
   },
   veiculos: {
     title: "Veiculos",
-    subtitle: "Frota disponivel para locacao",
+    singular: "Veiculo",
     endpoint: "Veiculos",
-    id: "id",
     fields: [
       { name: "modelo", label: "Modelo", required: true },
       { name: "anoFabricacao", label: "Ano de fabricacao", type: "number", required: true },
@@ -74,8 +69,8 @@ const entities = {
       { name: "placa", label: "Placa", required: true },
       { name: "cor", label: "Cor" },
       { name: "disponivel", label: "Disponivel", type: "select", options: [{ value: true, label: "Sim" }, { value: false, label: "Nao" }] },
-      { name: "fabricanteId", label: "Id do fabricante", type: "number", required: true },
-      { name: "categoriaId", label: "Id da categoria", type: "number", required: true }
+      { name: "fabricanteId", label: "Fabricante", type: "lookup", source: "fabricantes", required: true },
+      { name: "categoriaId", label: "Categoria", type: "lookup", source: "categorias", required: true }
     ],
     columns: ["id", "modelo", "anoFabricacao", "quilometragem", "placa", "cor", "disponivel", "fabricanteId", "categoriaId"],
     filters: [
@@ -85,12 +80,11 @@ const entities = {
   },
   alugueis: {
     title: "Alugueis",
-    subtitle: "Locacoes realizadas",
+    singular: "Aluguel",
     endpoint: "Alugueis",
-    id: "id",
     fields: [
-      { name: "clienteId", label: "Id do cliente", type: "number", required: true },
-      { name: "veiculoId", label: "Id do veiculo", type: "number", required: true },
+      { name: "clienteId", label: "Cliente", type: "lookup", source: "clientes", required: true },
+      { name: "veiculoId", label: "Veiculo", type: "lookup", source: "veiculos", required: true },
       { name: "dataInicio", label: "Data de inicio", type: "date", required: true },
       { name: "dataFim", label: "Data final", type: "date", required: true },
       { name: "dataDevolucao", label: "Data de devolucao", type: "date" },
@@ -100,19 +94,18 @@ const entities = {
       { name: "valorTotal", label: "Valor total", type: "number", step: "0.01" },
       { name: "statusAluguel", label: "Status", required: true }
     ],
-    columns: ["id", "clienteId", "veiculoId", "dataInicio", "dataFim", "dataDevolucao", "kmInicial", "kmFinal", "valorDiaria", "valorTotal", "statusAluguel"],
+    columns: ["id", "clienteId", "veiculoId", "dataInicio", "dataFim", "dataDevolucao", "valorTotal", "statusAluguel"],
     filters: [
-      { name: "clienteId", label: "Filtrar por clienteId" },
+      { name: "clienteId", label: "Filtrar por cliente" },
       { name: "statusAluguel", label: "Filtrar por status" }
     ]
   },
   pagamentos: {
     title: "Pagamentos",
-    subtitle: "Pagamentos das locacoes",
+    singular: "Pagamento",
     endpoint: "Pagamentos",
-    id: "id",
     fields: [
-      { name: "aluguelId", label: "Id do aluguel", type: "number", required: true },
+      { name: "aluguelId", label: "Aluguel", type: "lookup", source: "alugueis", required: true },
       { name: "dataPagamento", label: "Data do pagamento", type: "date", required: true },
       { name: "valorPago", label: "Valor pago", type: "number", step: "0.01", required: true },
       { name: "metodoPagamento", label: "Metodo de pagamento", required: true },
@@ -132,11 +125,16 @@ document.getElementById("saveApi").addEventListener("click", async () => {
   await loadAll();
 });
 
+document.getElementById("homeButton").addEventListener("click", () => {
+  state.view = "home";
+  setActiveNav();
+  render();
+});
+
 document.querySelectorAll(".tab").forEach((button) => {
   button.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
     state.view = button.dataset.view;
+    setActiveNav();
     render();
   });
 });
@@ -145,14 +143,16 @@ loadAll();
 
 async function loadAll() {
   setStatus("Carregando dados...", "");
+
   try {
-    await Promise.all(Object.entries(entities).map(async ([key, config]) => {
+    for (const [key, config] of Object.entries(entities)) {
       state.data[key] = await request(config.endpoint);
-    }));
+    }
     setStatus("Conectado ao backend", "ok");
   } catch (error) {
     setStatus(error.message, "error");
   }
+
   render();
 }
 
@@ -183,7 +183,18 @@ async function request(path, options = {}) {
   return response.json();
 }
 
+function setActiveNav() {
+  document.querySelectorAll(".tab").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === state.view);
+  });
+}
+
 function render() {
+  if (state.view === "home") {
+    renderHome();
+    return;
+  }
+
   if (state.view === "dashboard") {
     renderDashboard();
     return;
@@ -197,164 +208,120 @@ function render() {
   renderEntity(state.view);
 }
 
+function renderHome() {
+  app.innerHTML = `
+    <section class="home-screen">
+      <img class="home-logo" src="assets/logoAlugafacil.PNG" alt="AlugaFacil Locadora de Veiculos">
+    </section>
+  `;
+}
+
 function renderDashboard() {
-  const counts = Object.keys(entities).map((key) => ({
-    label: entities[key].title,
+  const cards = Object.keys(entities).map((key) => ({
+    title: entities[key].title,
     value: (state.data[key] || []).length
   }));
 
   app.innerHTML = `
-    <section class="dashboard-grid">
-      ${counts.map((item) => `
-        <div class="metric">
-          <span>${item.label}</span>
-          <strong>${item.value}</strong>
-        </div>
-      `).join("")}
-    </section>
-    <section class="panel">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">Visao geral</p>
-          <h2>Fluxo principal do sistema</h2>
-        </div>
-        <button class="ghost-button" type="button" data-action="reload">Recarregar dados</button>
+    <section class="dashboard-page">
+      <div class="dashboard-cards">
+        ${cards.map((card) => `
+          <button class="dashboard-card" type="button" data-open-card="${card.title.toLowerCase()}">
+            <strong>${card.title}</strong>
+            <span>${card.value}</span>
+          </button>
+        `).join("")}
       </div>
-      <ul class="help-list">
-        <li>Cadastre fabricantes e categorias antes de cadastrar veiculos.</li>
-        <li>Cadastre clientes e veiculos antes de registrar alugueis.</li>
-        <li>Cadastre pagamentos depois do aluguel criado.</li>
-        <li>Use a aba Consultas para visualizar alugueis completos, por cliente, por veiculo, por periodo e com pagamento.</li>
-      </ul>
     </section>
   `;
-
-  app.querySelector("[data-action='reload']").addEventListener("click", loadAll);
 }
 
 function renderEntity(key) {
   const config = entities[key];
-  const node = template.content.cloneNode(true);
-  const section = node.querySelector(".entity-layout");
-  const form = node.querySelector(".entity-form");
-
-  node.querySelector(".entity-title").textContent = config.title;
-  node.querySelector(".entity-subtitle").textContent = config.subtitle;
-  node.querySelector(".form-title").textContent = config.title;
-  node.querySelector(".reload-button").addEventListener("click", loadAll);
-  node.querySelector(".new-button").addEventListener("click", () => {
-    state.editing[key] = null;
-    renderEntity(key);
-  });
-  node.querySelector(".clear-button").addEventListener("click", () => {
-    state.editing[key] = null;
-    renderEntity(key);
-  });
-  node.querySelector(".save-button").addEventListener("click", () => saveRecord(key, form));
-
-  const filters = node.querySelector(".filters");
-  config.filters.forEach((filter) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "filter-field";
-    wrapper.innerHTML = `
-      <label>${filter.label}</label>
-      <input data-filter="${filter.name}" value="${escapeHtml((state.filters[key] || {})[filter.name] || "")}">
-    `;
-    wrapper.querySelector("input").addEventListener("input", (event) => {
-      state.filters[key] = state.filters[key] || {};
-      state.filters[key][filter.name] = event.target.value;
-      renderTable(key, section);
-    });
-    filters.appendChild(wrapper);
-  });
-
-  renderForm(config, form, state.editing[key]);
-  app.replaceChildren(node);
-  renderTable(key, app);
-}
-
-function renderForm(config, form, record) {
-  form.innerHTML = "";
-  const id = record ? record[config.id] : "";
-  const idField = document.createElement("input");
-  idField.type = "hidden";
-  idField.name = config.id;
-  idField.value = id;
-  form.appendChild(idField);
-
-  form.closest(".form-panel").querySelector(".form-mode").textContent = record ? `Editando ID ${id}` : "Cadastro";
-
-  config.fields.forEach((field) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "field";
-    const value = record ? record[field.name] : "";
-
-    if (field.type === "select") {
-      wrapper.innerHTML = `
-        <label>${field.label}</label>
-        <select name="${field.name}">
-          ${field.options.map((option) => `<option value="${option.value}" ${String(value) === String(option.value) ? "selected" : ""}>${option.label}</option>`).join("")}
-        </select>
-      `;
-    } else {
-      wrapper.innerHTML = `
-        <label>${field.label}</label>
-        <input
-          name="${field.name}"
-          type="${field.type || "text"}"
-          value="${value ?? ""}"
-          ${field.required ? "required" : ""}
-          ${field.step ? `step="${field.step}"` : ""}
-          ${field.maxLength ? `maxlength="${field.maxLength}"` : ""}
-        >
-      `;
-    }
-
-    form.appendChild(wrapper);
-  });
-}
-
-function renderTable(key, root) {
-  const config = entities[key];
   const rows = filteredRows(key);
-  const thead = root.querySelector("thead");
-  const tbody = root.querySelector("tbody");
 
-  thead.innerHTML = `
-    <tr>
-      ${config.columns.map((column) => `<th>${column}</th>`).join("")}
-      <th>Acoes</th>
-    </tr>
+  app.innerHTML = `
+    <section class="list-page">
+      <div class="list-header">
+        <h2>${config.title}</h2>
+      </div>
+
+      <div class="list-toolbar">
+        <div class="filters">
+          ${config.filters.map((filter) => `
+            <label class="filter-field">
+              <span>${filter.label}</span>
+              <input data-filter="${filter.name}" value="${escapeHtml((state.filters[key] || {})[filter.name] || "")}">
+            </label>
+          `).join("")}
+        </div>
+        <button class="new-record-button" type="button" data-new-record>Novo Registro</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              ${config.columns.map((column) => `<th>${labelForColumn(column)}</th>`).join("")}
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.length ? rows.map((row) => rowHtml(key, row)).join("") : emptyRow(config.columns.length + 1)}
+          </tbody>
+        </table>
+      </div>
+    </section>
   `;
 
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td class="empty-state" colspan="${config.columns.length + 1}">Nenhum registro encontrado.</td></tr>`;
-    return;
-  }
+  app.querySelector("[data-new-record]").addEventListener("click", () => openFormModal(key));
 
-  tbody.innerHTML = rows.map((row) => `
-    <tr>
-      ${config.columns.map((column) => `<td>${formatValue(row[column])}</td>`).join("")}
-      <td>
-        <div class="row-actions">
-          <button class="small-button" type="button" data-edit="${row[config.id]}">Editar</button>
-          <button class="small-button delete" type="button" data-delete="${row[config.id]}">Excluir</button>
-        </div>
-      </td>
-    </tr>
-  `).join("");
-
-  tbody.querySelectorAll("[data-edit]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = Number(button.dataset.edit);
-      state.editing[key] = (state.data[key] || []).find((item) => Number(item[config.id]) === id);
+  app.querySelectorAll("[data-filter]").forEach((input) => {
+    input.addEventListener("input", (event) => {
+      state.filters[key] = state.filters[key] || {};
+      state.filters[key][event.target.dataset.filter] = event.target.value;
       renderEntity(key);
     });
   });
 
-  tbody.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", () => deleteRecord(key, Number(button.dataset.delete)));
+  app.querySelectorAll("[data-consult]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const record = findRecord(key, button.dataset.consult);
+      openDetailsModal(key, record);
+    });
   });
+
+  app.querySelectorAll("[data-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const record = findRecord(key, button.dataset.edit);
+      openFormModal(key, record);
+    });
+  });
+
+  app.querySelectorAll("[data-delete]").forEach((button) => {
+    button.addEventListener("click", () => openDeleteModal(key, button.dataset.delete));
+  });
+}
+
+function rowHtml(key, row) {
+  const config = entities[key];
+
+  return `
+    <tr>
+      ${config.columns.map((column) => `<td>${formatField(key, column, row[column])}</td>`).join("")}
+      <td>
+        <div class="row-actions">
+          <button class="action-button consult" type="button" data-consult="${row.id}">Consultar</button>
+          <button class="action-button edit" type="button" data-edit="${row.id}">Editar</button>
+          <button class="action-button delete" type="button" data-delete="${row.id}">Excluir</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function emptyRow(colspan) {
+  return `<tr><td class="empty-state" colspan="${colspan}">Nenhum registro encontrado.</td></tr>`;
 }
 
 function filteredRows(key) {
@@ -362,29 +329,133 @@ function filteredRows(key) {
   return (state.data[key] || []).filter((row) => {
     return Object.entries(filters).every(([field, value]) => {
       if (!value) return true;
-      return String(row[field] ?? "").toLowerCase().includes(value.toLowerCase());
+      return filterText(key, field, row[field]).toLowerCase().includes(value.toLowerCase());
     });
   });
 }
 
-async function saveRecord(key, form) {
+function filterText(key, field, value) {
+  if (field.endsWith("Id")) {
+    return `${value ?? ""} ${formatField(key, field, value)}`;
+  }
+  return String(value ?? "");
+}
+
+function findRecord(key, id) {
+  return (state.data[key] || []).find((item) => Number(item.id) === Number(id));
+}
+
+function openDetailsModal(key, record) {
   const config = entities[key];
+  const rows = ["id", ...config.fields.map((field) => field.name)];
+
+  openModal({
+    title: `Consultar ${config.singular}`,
+    size: "small",
+    content: `
+      <div class="details-list">
+        ${rows.map((name) => `
+          <div class="details-row">
+            <strong>${labelForColumn(name)}</strong>
+            <span>${formatField(key, name, record?.[name])}</span>
+          </div>
+        `).join("")}
+      </div>
+    `,
+    actions: [
+      { label: "Fechar", className: "modal-secondary", onClick: closeModal }
+    ]
+  });
+}
+
+function openFormModal(key, record = null) {
+  const config = entities[key];
+  const isEdit = Boolean(record);
+
+  openModal({
+    title: `${isEdit ? "Editar" : "Cadastrar"} ${config.singular}`,
+    size: "small",
+    content: `
+      <form id="recordForm" class="modal-form">
+        ${isEdit ? `<input type="hidden" name="id" value="${record.id}">` : ""}
+        ${config.fields.map((field) => fieldHtml(field, record)).join("")}
+      </form>
+    `,
+    actions: [
+      { label: "Cancelar", className: "modal-secondary", onClick: closeModal },
+      { label: isEdit ? "Salvar" : "Cadastrar", className: "modal-primary", onClick: () => saveRecord(key, record) }
+    ]
+  });
+}
+
+function fieldHtml(field, record) {
+  const value = record ? record[field.name] : "";
+
+  if (field.type === "lookup") {
+    const options = state.data[field.source] || [];
+    return `
+      <label class="modal-field">
+        <span>${field.label}</span>
+        <select name="${field.name}" ${field.required ? "required" : ""}>
+          <option value="">Selecione</option>
+          ${options.map((option) => `
+            <option value="${option.id}" ${Number(value) === Number(option.id) ? "selected" : ""}>${escapeHtml(lookupLabel(field.source, option))}</option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  if (field.type === "select") {
+    return `
+      <label class="modal-field">
+        <span>${field.label}</span>
+        <select name="${field.name}" ${field.required ? "required" : ""}>
+          ${field.options.map((option) => `
+            <option value="${option.value}" ${String(value) === String(option.value) ? "selected" : ""}>${option.label}</option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  return `
+    <label class="modal-field">
+      <span>${field.label}</span>
+      <input
+        name="${field.name}"
+        type="${field.type || "text"}"
+        value="${escapeHtml(value ?? "")}"
+        ${field.required ? "required" : ""}
+        ${field.step ? `step="${field.step}"` : ""}
+        ${field.maxLength ? `maxlength="${field.maxLength}"` : ""}
+      >
+    </label>
+  `;
+}
+
+async function saveRecord(key, record) {
+  const config = entities[key];
+  const form = document.getElementById("recordForm");
+
+  if (!form.reportValidity()) {
+    return;
+  }
+
   const formData = new FormData(form);
-  const id = formData.get(config.id);
   const payload = {};
 
   config.fields.forEach((field) => {
-    const raw = formData.get(field.name);
-    payload[field.name] = coerceValue(raw, field);
+    payload[field.name] = coerceValue(formData.get(field.name), field);
   });
 
-  if (id) {
-    payload[config.id] = Number(id);
+  if (record) {
+    payload.id = Number(record.id);
   }
 
   try {
-    if (id) {
-      await request(`${config.endpoint}/${id}`, {
+    if (record) {
+      await request(`${config.endpoint}/${record.id}`, {
         method: "PUT",
         body: JSON.stringify(payload)
       });
@@ -394,28 +465,43 @@ async function saveRecord(key, form) {
         body: JSON.stringify(payload)
       });
     }
-    state.editing[key] = null;
+
+    closeModal();
     await loadAll();
     state.view = key;
+    setActiveNav();
     renderEntity(key);
   } catch (error) {
-    alert(error.message);
+    showModalMessage(error.message, "error");
   }
+}
+
+function openDeleteModal(key, id) {
+  const config = entities[key];
+
+  openModal({
+    title: `Excluir ${config.singular}`,
+    size: "small",
+    content: `<p class="modal-text">Deseja excluir o registro ${id}? Essa acao nao pode ser desfeita.</p>`,
+    actions: [
+      { label: "Cancelar", className: "modal-secondary", onClick: closeModal },
+      { label: "Excluir", className: "modal-danger", onClick: () => deleteRecord(key, id) }
+    ]
+  });
 }
 
 async function deleteRecord(key, id) {
   const config = entities[key];
-  if (!confirm(`Excluir registro ${id}?`)) {
-    return;
-  }
 
   try {
     await request(`${config.endpoint}/${id}`, { method: "DELETE" });
+    closeModal();
     await loadAll();
     state.view = key;
+    setActiveNav();
     renderEntity(key);
   } catch (error) {
-    alert(error.message);
+    showModalMessage(error.message, "error");
   }
 }
 
@@ -423,7 +509,7 @@ function coerceValue(raw, field) {
   if (raw === "" && !field.required) {
     return null;
   }
-  if (field.type === "number") {
+  if (field.type === "number" || field.type === "lookup") {
     return Number(raw);
   }
   if (field.type === "select") {
@@ -434,61 +520,44 @@ function coerceValue(raw, field) {
 
 function renderConsultas() {
   app.innerHTML = `
-    <section class="panel">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">Rotas com joins e filtros</p>
-          <h2>Consultas de alugueis</h2>
-        </div>
-        <button class="ghost-button" type="button" data-action="reload">Recarregar base</button>
-      </div>
-      <div class="query-grid">
-        <div class="query-card">
-          <h3>Alugueis completos</h3>
-          <button class="primary-button" data-query="completo" type="button">Consultar</button>
-        </div>
-        <div class="query-card">
-          <h3>Por cliente</h3>
-          <div class="query-form">
-            <input id="consultaCliente" placeholder="Ex.: Ana">
-            <button class="primary-button" data-query="cliente" type="button">Consultar</button>
-          </div>
-        </div>
-        <div class="query-card">
-          <h3>Por veiculo</h3>
-          <div class="query-form">
-            <input id="consultaVeiculo" placeholder="Ex.: Corolla">
-            <button class="primary-button" data-query="veiculo" type="button">Consultar</button>
-          </div>
-        </div>
-        <div class="query-card">
-          <h3>Por periodo</h3>
-          <div class="query-form">
+    <section class="consultas-page">
+      <h2>Consultas de Alugueis</h2>
+      <div class="consulta-grid">
+        <label>
+          <span>Aluguel completo</span>
+          <button class="consulta-button" data-query="completo" type="button">Consultar</button>
+        </label>
+        <label>
+          <span>Por cliente</span>
+          <input id="consultaCliente" value="Ana">
+          <button class="consulta-button" data-query="cliente" type="button">Consultar</button>
+        </label>
+        <label>
+          <span>Por veiculo</span>
+          <input id="consultaVeiculo" value="Corolla">
+          <button class="consulta-button" data-query="veiculo" type="button">Consultar</button>
+        </label>
+        <label>
+          <span>Por periodo</span>
+          <div class="date-row">
             <input id="periodoInicio" type="date" value="2026-06-01">
             <input id="periodoFim" type="date" value="2026-06-30">
-            <button class="primary-button" data-query="periodo" type="button">Consultar</button>
           </div>
-        </div>
-        <div class="query-card">
-          <h3>Com pagamento</h3>
-          <button class="primary-button" data-query="pagamento" type="button">Consultar</button>
-        </div>
+          <button class="consulta-button" data-query="periodo" type="button">Consultar</button>
+        </label>
+        <label>
+          <span>Com pagamento</span>
+          <button class="consulta-button" data-query="pagamento" type="button">Consultar</button>
+        </label>
       </div>
-    </section>
-    <section class="panel result-box">
-      <div class="section-title compact">
-        <div>
-          <p class="eyebrow">Resultado</p>
-          <h3>Dados retornados pela API</h3>
-        </div>
-      </div>
+
+      <h3>Resultado da Consulta</h3>
       <div id="queryResult" class="table-wrap">
         <p class="empty-state">Escolha uma consulta acima.</p>
       </div>
     </section>
   `;
 
-  app.querySelector("[data-action='reload']").addEventListener("click", loadAll);
   app.querySelectorAll("[data-query]").forEach((button) => {
     button.addEventListener("click", () => runConsulta(button.dataset.query));
   });
@@ -523,23 +592,85 @@ function buildGenericTable(rows) {
   return `
     <table>
       <thead>
-        <tr>${columns.map((column) => `<th>${column}</th>`).join("")}</tr>
+        <tr>${columns.map((column) => `<th>${labelForColumn(column)}</th>`).join("")}</tr>
       </thead>
       <tbody>
         ${rows.map((row) => `
-          <tr>${columns.map((column) => `<td>${formatValue(row[column])}</td>`).join("")}</tr>
+          <tr>${columns.map((column) => `<td>${formatPlainValue(row[column])}</td>`).join("")}</tr>
         `).join("")}
       </tbody>
     </table>
   `;
 }
 
-function setStatus(message, type) {
-  apiStatus.textContent = message;
-  apiStatus.className = `status ${type}`;
+function openModal({ title, content, actions = [], size = "normal" }) {
+  closeModal();
+
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = `
+    <div class="modal ${size === "small" ? "modal-small" : ""}" role="dialog" aria-modal="true">
+      <button class="modal-close" type="button" aria-label="Fechar">x</button>
+      <h2>${title}</h2>
+      <div class="modal-message" hidden></div>
+      <div class="modal-body">${content}</div>
+      <div class="modal-actions"></div>
+    </div>
+  `;
+
+  const actionsContainer = overlay.querySelector(".modal-actions");
+  actions.forEach((action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = action.label;
+    button.className = action.className || "modal-secondary";
+    button.addEventListener("click", action.onClick);
+    actionsContainer.appendChild(button);
+  });
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) closeModal();
+  });
+  overlay.querySelector(".modal-close").addEventListener("click", closeModal);
+
+  document.body.appendChild(overlay);
+  state.modal = overlay;
 }
 
-function formatValue(value) {
+function closeModal() {
+  if (state.modal) {
+    state.modal.remove();
+    state.modal = null;
+  }
+}
+
+function showModalMessage(message, type) {
+  const box = state.modal?.querySelector(".modal-message");
+  if (!box) return;
+  box.hidden = false;
+  box.textContent = message;
+  box.className = `modal-message ${type}`;
+}
+
+function formatField(entityKey, column, value) {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  if (column === "fabricanteId") return escapeHtml(lookupById("fabricantes", value));
+  if (column === "categoriaId") return escapeHtml(lookupById("categorias", value));
+  if (column === "clienteId") return escapeHtml(lookupById("clientes", value));
+  if (column === "veiculoId") return escapeHtml(lookupById("veiculos", value));
+  if (column === "aluguelId") return escapeHtml(lookupById("alugueis", value));
+
+  if (typeof value === "boolean") {
+    return value ? "Sim" : "Nao";
+  }
+
+  return escapeHtml(String(value));
+}
+
+function formatPlainValue(value) {
   if (value === null || value === undefined || value === "") {
     return "-";
   }
@@ -549,8 +680,65 @@ function formatValue(value) {
   return escapeHtml(String(value));
 }
 
+function lookupById(source, id) {
+  const record = (state.data[source] || []).find((item) => Number(item.id) === Number(id));
+  return record ? lookupLabel(source, record) : String(id);
+}
+
+function lookupLabel(source, record) {
+  if (source === "clientes") return `${record.nome} - ${record.cpf}`;
+  if (source === "veiculos") return `${record.modelo} - ${record.placa}`;
+  if (source === "alugueis") return `Aluguel ${record.id} - cliente ${record.clienteId}`;
+  if (source === "fabricantes") return record.nome;
+  if (source === "categorias") return record.nome;
+  return record.nome || record.id;
+}
+
+function labelForColumn(column) {
+  const labels = {
+    id: "ID",
+    nome: "Nome",
+    cpf: "CPF",
+    email: "Email",
+    telefone: "Telefone",
+    cnh: "CNH",
+    paisOrigem: "Pais Origem",
+    descricao: "Descricao",
+    modelo: "Modelo",
+    anoFabricacao: "Ano",
+    quilometragem: "KM",
+    placa: "Placa",
+    cor: "Cor",
+    disponivel: "Disponivel",
+    fabricanteId: "Fabricante",
+    categoriaId: "Categoria",
+    clienteId: "Cliente",
+    veiculoId: "Veiculo",
+    aluguelId: "Aluguel",
+    dataInicio: "Data Inicio",
+    dataFim: "Data Fim",
+    dataDevolucao: "Data Devolucao",
+    kmInicial: "KM Inicial",
+    kmFinal: "KM Final",
+    valorDiaria: "Valor Diaria",
+    valorTotal: "Valor Total",
+    statusAluguel: "Status",
+    dataPagamento: "Data Pagamento",
+    valorPago: "Valor Pago",
+    metodoPagamento: "Metodo",
+    statusPagamento: "Status"
+  };
+
+  return labels[column] || column;
+}
+
+function setStatus(message, type) {
+  apiStatus.textContent = message;
+  apiStatus.className = `status ${type}`;
+}
+
 function escapeHtml(value) {
-  return value
+  return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
