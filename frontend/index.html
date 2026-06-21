@@ -3,39 +3,48 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Locadora de Veiculos</title>
+    <title>AlugaFacil - Locadora de Veiculos</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Sistema integrado ao backend</p>
-        <h1>Locadora de Veiculos</h1>
-      </div>
-      <div class="api-box">
-        <label for="apiBase">URL da API</label>
-        <div class="api-row">
-          <input id="apiBase" type="url" value="http://localhost:5206/api">
-          <button id="saveApi" type="button">Conectar</button>
+    <div class="frame-label">Frame 1</div>
+
+    <div class="page-frame">
+      <header class="topbar">
+        <div class="brand-area">
+          <img class="brand-logo" src="assets/logoAlugafacil.PNG" alt="AlugaFacil Locadora de Veiculos">
         </div>
-        <span id="apiStatus" class="status">Aguardando conexao</span>
+
+        <div class="api-box">
+          <label for="apiBase">URL da API</label>
+          <div class="api-row">
+            <input id="apiBase" type="url" value="http://localhost:5206/api">
+            <button id="saveApi" type="button">Conectar</button>
+          </div>
+          <span id="apiStatus" class="status">Aguardando conexao</span>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        <aside class="sidebar">
+          <nav class="tabs" aria-label="Navegacao principal">
+            <button class="tab active" data-view="dashboard" type="button">Painel</button>
+            <button class="tab" data-view="clientes" type="button">Clientes</button>
+            <button class="tab" data-view="fabricantes" type="button">Fabricantes</button>
+            <button class="tab" data-view="categorias" type="button">Categorias</button>
+            <button class="tab" data-view="veiculos" type="button">Veiculos</button>
+            <button class="tab" data-view="alugueis" type="button">Alugueis</button>
+            <button class="tab" data-view="pagamentos" type="button">Pagamentos</button>
+            <button class="tab" data-view="consultas" type="button">Consultas</button>
+          </nav>
+          <button id="homeButton" class="home-button" type="button">Voltar ao<br>Inicio</button>
+        </aside>
+
+        <main id="app" class="content" aria-live="polite"></main>
       </div>
-    </header>
 
-    <main class="app-shell">
-      <nav class="tabs" aria-label="Navegacao principal">
-        <button class="tab active" data-view="dashboard" type="button">Painel</button>
-        <button class="tab" data-view="clientes" type="button">Clientes</button>
-        <button class="tab" data-view="fabricantes" type="button">Fabricantes</button>
-        <button class="tab" data-view="categorias" type="button">Categorias</button>
-        <button class="tab" data-view="veiculos" type="button">Veiculos</button>
-        <button class="tab" data-view="alugueis" type="button">Alugueis</button>
-        <button class="tab" data-view="pagamentos" type="button">Pagamentos</button>
-        <button class="tab" data-view="consultas" type="button">Consultas</button>
-      </nav>
-
-      <section id="app" class="content" aria-live="polite"></section>
-    </main>
+      <footer class="footer">Copyright Lilianne Maia 2026</footer>
+    </div>
 
     <template id="entityTemplate">
       <section class="entity-layout">
