@@ -21,9 +21,13 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f8f8f8;
-  color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
 }
 
 button,
@@ -36,28 +40,20 @@ button {
   cursor: pointer;
 }
 
-.frame-label {
-  width: min(920px, calc(100vw - 20px));
-  margin: 10px auto 6px;
-  color: #b6b6b6;
-  font-size: 14px;
-}
-
 .page-frame {
+  width: min(1180px, calc(100vw - 32px));
+  min-height: calc(100vh - 48px);
+  background: #fff;
   display: grid;
-  grid-template-rows: 96px 1fr 20px;
-  width: min(920px, calc(100vw - 20px));
-  min-height: 650px;
-  margin: 0 auto 20px;
-  background: var(--surface);
+  grid-template-rows: auto 1fr 18px;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 8px 12px;
+  
+  padding: 0px 12px;
   background: var(--topbar);
 }
 
@@ -514,14 +510,14 @@ th {
 }
 
 @media (max-width: 760px) {
-  .frame-label,
-  .page-frame {
-    width: calc(100vw - 12px);
+  body {
+    padding: 6px;
   }
 
   .page-frame {
+    width: calc(100vw - 12px);
+    min-height: calc(100vh - 12px);
     grid-template-rows: auto 1fr auto;
-    min-height: 100vh;
   }
 
   .topbar,
@@ -530,10 +526,11 @@ th {
     display: block;
   }
 
-  .brand-logo,
-  .api-box {
-    width: 100%;
-  }
+ .brand-logo {
+  display: block;
+  width: 245px;
+  height: auto;
+}
 
   .api-box {
     margin-top: 12px;

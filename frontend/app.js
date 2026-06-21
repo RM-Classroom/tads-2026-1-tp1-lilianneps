@@ -280,10 +280,46 @@ function renderEntity(key) {
     input.addEventListener("input", (event) => {
       state.filters[key] = state.filters[key] || {};
       state.filters[key][event.target.dataset.filter] = event.target.value;
-      renderEntity(key);
+      updateEntityTable(key);
     });
   });
 
+  app.querySelectorAll("[data-consult]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const record = findRecord(key, button.dataset.consult);
+      openDetailsModal(key, record);
+    });
+  });
+
+  app.querySelectorAll("[data-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const record = findRecord(key, button.dataset.edit);
+      openFormModal(key, record);
+    });
+  });
+
+  app.querySelectorAll("[data-delete]").forEach((button) => {
+    button.addEventListener("click", () => openDeleteModal(key, button.dataset.delete));
+  });
+}
+
+function updateEntityTable(key) {
+  const config = entities[key];
+  const rows = filteredRows(key);
+  const tbody = app.querySelector("tbody");
+
+  if (!tbody) {
+    return;
+  }
+
+  tbody.innerHTML = rows.length
+    ? rows.map((row) => rowHtml(key, row)).join("")
+    : emptyRow(config.columns.length + 1);
+
+  bindRowActions(key);
+}
+
+function bindRowActions(key) {
   app.querySelectorAll("[data-consult]").forEach((button) => {
     button.addEventListener("click", () => {
       const record = findRecord(key, button.dataset.consult);
