@@ -169,7 +169,14 @@ async function request(path, options = {}) {
     let message = `Erro ${response.status}`;
     try {
       const data = await response.json();
-      message = data.title || JSON.stringify(data);
+
+if (data.errors) {
+  message = Object.entries(data.errors)
+    .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+    .join("\n");
+} else {
+  message = data.detail || data.title || JSON.stringify(data);
+}
     } catch {
       message = await response.text() || message;
     }

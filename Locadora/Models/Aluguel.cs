@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Locadora.Models;
 
@@ -27,9 +29,15 @@ public partial class Aluguel
 
     public string StatusAluguel { get; set; } = null!;
 
-    public virtual Cliente Cliente { get; set; } = null!;
+    [JsonIgnore]
+    [ValidateNever]
+    public virtual Cliente? Cliente { get; set; }
 
+    [JsonIgnore]
+    [ValidateNever]
     public virtual Pagamento? Pagamento { get; set; }
 
-    public virtual Veiculo Veiculo { get; set; } = null!;
+    [JsonIgnore]
+    [ValidateNever]
+    public virtual Veiculo? Veiculo { get; set; }
 }
