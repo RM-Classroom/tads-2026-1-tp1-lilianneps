@@ -5,12 +5,15 @@ Projeto de backend desenvolvido em ASP.NET Core com Entity Framework Core e SQL 
 O sistema permite o gerenciamento de clientes, veiculos, fabricantes, categorias, alugueis e pagamentos, com APIs REST documentadas pelo Swagger.
 
 ## Tecnologias utilizadas
-
+- Figma
 - C#
 - ASP.NET Core
 - Entity Framework Core
 - SQL Server Express
 - Swagger
+
+## Protótipo do Figma
+[Ver protótipo no Figma](https://www.figma.com/proto/RpEMQ04PYUscNHFI9TY1Xv/Untitled?page-id=0%3A1&node-id=1-2&p=f&viewport=284%2C28%2C0.2&t=uxvE9FFbsFvoVHzE-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=1%3A2)
 
 ## Entidades do sistema
 
