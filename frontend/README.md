@@ -6,7 +6,7 @@ Este frontend foi criado para consumir o backend ASP.NET Core da primeira etapa 
 
 - `index.html`: aplicacao principal integrada com a API.
 - `styles.css`: estilos da aplicacao.
-- `app.js`: regras de tela, chamadas REST, CRUD e filtros.
+- `app.js`: regras de tela, chamadas REST, CRUD, filtros e modais.
 - `wireframes.html`: wireframes de media fidelidade para documentacao.
 - `roteiro-pitch.md`: roteiro sugerido para o video de 3 a 5 minutos.
 
@@ -20,6 +20,8 @@ Este frontend foi criado para consumir o backend ASP.NET Core da primeira etapa 
   - Alugueis
   - Pagamentos
 - Pesquisa com pelo menos dois filtros por entidade.
+- Cadastro, consulta e edicao por modal.
+- Exclusao com modal de confirmacao.
 - Tela de consultas usando rotas do backend:
   - `/api/Alugueis/completo`
   - `/api/Alugueis/por-cliente/{nome}`
